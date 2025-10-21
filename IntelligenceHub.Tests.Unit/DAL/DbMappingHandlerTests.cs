@@ -16,10 +16,12 @@ namespace IntelligenceHub.Tests.Unit.DAL
         public void MapFromDbProfile_ShouldMapCorrectly()
         {
             // Arrange
+            var tenant = Guid.NewGuid();
             var dbProfile = new DbProfile
             {
                 Id = 1,
-                Name = "Test Profile",
+                TenantId = tenant,
+                Name = DbMappingHandler.AppendTenantToName("Test Profile", tenant),
                 Model = "Test Model",
                 Host = "Azure",
                 ImageHost = "Azure",
@@ -42,7 +44,7 @@ namespace IntelligenceHub.Tests.Unit.DAL
 
             // Assert
             Assert.Equal(dbProfile.Id, result.Id);
-            Assert.Equal(dbProfile.Name, result.Name);
+            Assert.Equal("Test Profile", result.Name);
             Assert.Equal(dbProfile.Model, result.Model);
             Assert.Equal(dbProfile.Host, result.Host.ToString());
             Assert.Equal(dbProfile.ImageHost, result.ImageHost.ToString());
@@ -105,10 +107,12 @@ namespace IntelligenceHub.Tests.Unit.DAL
         public void MapFromDbTool_ShouldMapCorrectly()
         {
             // Arrange
+            var tenant = Guid.NewGuid();
             var dbTool = new DbTool
             {
                 Id = 1,
-                Name = "Test Tool",
+                TenantId = tenant,
+                Name = DbMappingHandler.AppendTenantToName("Test Tool", tenant),
                 Description = "Test Description",
                 ExecutionUrl = "http://test.com",
                 ExecutionMethod = "POST",
@@ -118,8 +122,8 @@ namespace IntelligenceHub.Tests.Unit.DAL
 
             var dbProperties = new List<DbProperty>
             {
-                new DbProperty { Id = 1, Name = "Param1", Type = "string", Description = "Test Param 1" },
-                new DbProperty { Id = 2, Name = "Param2", Type = "int", Description = "Test Param 2" }
+                new DbProperty { Id = 1, TenantId = tenant, Name = DbMappingHandler.AppendTenantToName("Param1", tenant), Type = "string", Description = "Test Param 1" },
+                new DbProperty { Id = 2, TenantId = tenant, Name = DbMappingHandler.AppendTenantToName("Param2", tenant), Type = "int", Description = "Test Param 2" }
             };
 
             // Act
@@ -130,7 +134,7 @@ namespace IntelligenceHub.Tests.Unit.DAL
             Assert.Equal(dbTool.ExecutionUrl, result.ExecutionUrl);
             Assert.Equal(dbTool.ExecutionMethod, result.ExecutionMethod);
             Assert.Equal(dbTool.ExecutionBase64Key, result.ExecutionBase64Key);
-            Assert.Equal(dbTool.Name, result.Function.Name);
+            Assert.Equal("Test Tool", result.Function.Name);
             Assert.Equal(dbTool.Description, result.Function.Description);
             Assert.Equal(dbTool.Required.Split(','), result.Function.Parameters.required);
             Assert.Equal(dbProperties.Count, result.Function.Parameters.properties.Count);
@@ -306,9 +310,11 @@ namespace IntelligenceHub.Tests.Unit.DAL
         public void MapFromDbIndexMetadata_ShouldMapCorrectly()
         {
             // Arrange
+            var tenant = Guid.NewGuid();
             var dbIndexData = new DbIndexMetadata
             {
-                Name = "Test Name",
+                TenantId = tenant,
+                Name = DbMappingHandler.AppendTenantToName("Test Name", tenant),
                 QueryType = "Simple",
                 GenerationHost = AGIServiceHost.Azure.ToString(),
                 ChunkOverlap = 0.5,
@@ -334,7 +340,7 @@ namespace IntelligenceHub.Tests.Unit.DAL
             var result = DbMappingHandler.MapFromDbIndexMetadata(dbIndexData);
 
             // Assert
-            Assert.Equal(dbIndexData.Name, result.Name);
+            Assert.Equal("Test Name", result.Name);
             Assert.Equal(dbIndexData.QueryType, result.QueryType.ToString());
             Assert.Equal(dbIndexData.GenerationHost, result.GenerationHost.ToString());
             Assert.Equal(dbIndexData.ChunkOverlap, result.ChunkOverlap);

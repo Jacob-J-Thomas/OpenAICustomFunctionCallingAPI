@@ -59,6 +59,12 @@ namespace IntelligenceHub.DAL.Implementations
             if (entity is ITenantEntity tenantEntity && _tenantProvider.TenantId.HasValue)
             {
                 tenantEntity.TenantId = _tenantProvider.TenantId.Value;
+                var nameProp = entity.GetType().GetProperty("Name");
+                if (nameProp != null && nameProp.PropertyType == typeof(string))
+                {
+                    var current = nameProp.GetValue(entity) as string ?? string.Empty;
+                    nameProp.SetValue(entity, DbMappingHandler.AppendTenantToName(current, tenantEntity.TenantId));
+                }
             }
             await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
@@ -76,6 +82,12 @@ namespace IntelligenceHub.DAL.Implementations
             if (entity is ITenantEntity tenantEntity && _tenantProvider.TenantId.HasValue)
             {
                 tenantEntity.TenantId = _tenantProvider.TenantId.Value;
+                var nameProp = entity.GetType().GetProperty("Name");
+                if (nameProp != null && nameProp.PropertyType == typeof(string))
+                {
+                    var current = nameProp.GetValue(entity) as string ?? string.Empty;
+                    nameProp.SetValue(entity, DbMappingHandler.AppendTenantToName(current, tenantEntity.TenantId));
+                }
             }
             _dbSet.Attach(entity);
             _context.Entry(entity).State = EntityState.Modified;

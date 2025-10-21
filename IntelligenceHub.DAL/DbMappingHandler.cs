@@ -13,6 +13,25 @@ namespace IntelligenceHub.DAL
     /// </summary>
     public static class DbMappingHandler
     {
+        /// <summary>
+        /// Appends the tenant id to an entity name. If the name already
+        /// contains the tenant prefix it is returned unchanged.
+        /// </summary>
+        public static string AppendTenantToName(string name, Guid tenantId)
+        {
+            var prefix = $"{tenantId}_";
+            return name.StartsWith(prefix) ? name : prefix + name;
+        }
+
+        /// <summary>
+        /// Removes the tenant id prefix from an entity name if present.
+        /// </summary>
+        public static string RemoveTenantFromName(string name, Guid tenantId)
+        {
+            var prefix = $"{tenantId}_";
+            return name.StartsWith(prefix) ? name[prefix.Length..] : name;
+        }
+
         #region Profiles
 
         /// <summary>
@@ -25,7 +44,7 @@ namespace IntelligenceHub.DAL
             var profile = new Profile()
             {
                 Id = dbProfile.Id,
-                Name = dbProfile.Name,
+                Name = RemoveTenantFromName(dbProfile.Name, dbProfile.TenantId),
                 Model = dbProfile.Model,
                 Host = dbProfile.Host.ConvertToServiceHost(),
                 ImageHost = dbProfile.ImageHost?.ConvertToServiceHost(),
@@ -46,13 +65,13 @@ namespace IntelligenceHub.DAL
                     Id = pt.Tool.Id, 
                     Function = new Function() 
                     { 
-                        Name = pt.Tool.Name, 
+                        Name = RemoveTenantFromName(pt.Tool.Name, pt.Tool.TenantId),
                         Description = pt.Tool.Description, 
                         Parameters = new Parameters() 
                         { 
                             type = "object", 
                             required = pt.Tool.Required.ToStringArray(),  
-                            properties = pt.Tool.Properties.ToDictionary(p => p.Name, p => new Property() 
+                            properties = pt.Tool.Properties.ToDictionary(p => RemoveTenantFromName(p.Name, p.TenantId), p => new Property()
                             { 
                                 Id = p.Id, 
                                 type = p.Type, 
@@ -143,7 +162,7 @@ namespace IntelligenceHub.DAL
                 ExecutionBase64Key = dbTool.ExecutionBase64Key,
                 Function = new Function()
                 {
-                    Name = dbTool.Name,
+                    Name = RemoveTenantFromName(dbTool.Name, dbTool.TenantId),
                     Description = dbTool.Description
                 }
             };
@@ -157,7 +176,7 @@ namespace IntelligenceHub.DAL
                     type = property.Type,
                     description = property.Description,
                 };
-                tool.Function.Parameters.properties.Add(property.Name, convertedProp);
+                tool.Function.Parameters.properties.Add(RemoveTenantFromName(property.Name, property.TenantId), convertedProp);
                 tool.Function.Parameters.required = dbTool.Required.ToStringArray();
             }
 
@@ -294,7 +313,7 @@ namespace IntelligenceHub.DAL
         {
             var metadata = new IndexMetadata()
             {
-                Name = dbIndexData.Name,
+                Name = RemoveTenantFromName(dbIndexData.Name, dbIndexData.TenantId),
                 QueryType = dbIndexData.QueryType?.ConvertStringToQueryType() ?? QueryType.Simple,
                 GenerationHost = dbIndexData.GenerationHost.ConvertToServiceHost(),
                 RagHost = dbIndexData.RagHost.ConvertToRagHost(),

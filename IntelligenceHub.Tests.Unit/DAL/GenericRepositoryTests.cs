@@ -1,4 +1,6 @@
-﻿using IntelligenceHub.DAL;
+﻿using System;
+using System.Linq;
+using IntelligenceHub.DAL;
 using IntelligenceHub.DAL.Implementations;
 using IntelligenceHub.DAL.Models;
 using IntelligenceHub.DAL.Tenant;
@@ -58,6 +60,19 @@ namespace IntelligenceHub.Tests.Unit.DAL
 
             var page2 = await repo.GetAllAsync(2, 2);
             Assert.Equal(new[] { "2", "3" }, page2.Select(m => m.Content));
+        }
+
+        [Fact]
+        public async Task AddAsync_AppendsTenantToName()
+        {
+            await using var context = CreateContext();
+            _tenantProvider.TenantId = Guid.NewGuid();
+            var repo = new GenericRepository<DbProfile>(context, _tenantProvider);
+
+            var profile = new DbProfile { Name = "MyProfile" };
+            var added = await repo.AddAsync(profile);
+
+            Assert.StartsWith(_tenantProvider.TenantId.ToString(), added.Name);
         }
     }
 }
